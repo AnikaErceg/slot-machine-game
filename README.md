@@ -1,7 +1,7 @@
 ## Spin machine
 
 #### Setup
-To run the game, simply open **index.html** in browser. 
+To run the game, simply open **index.html** in browser. Or go to: https://anikaerceg.github.io/slot-machine-game/
 
 Makes sure to have internet connection so CDN packages can load properly.
 
