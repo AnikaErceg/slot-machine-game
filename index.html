@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Slot machine</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+    <v-app id="app">
+        <v-container>
+            <v-col md="12">
+                <v-row>
+                    <v-col md="12">
+                        <v-switch v-model="isDebug" class="mx-2" label="Debug mode" :disabled="stillSpinning"></v-switch>
+                        <h4 class="pb-2 balance">Current balance:
+                            <span :class="{'win': isWin}">{{balance}}</span> <span v-if="isWin">+{{wonBalance}}</span>
+                        </h4>
+                        <v-divider
+                            class="mx-4"
+                            horizontal
+                        ></v-divider>
+                        <div v-show="isDebug">
+                            <h4 class="pb-2 mt-5">Add balance</h4>
+                            <v-row v-show="isDebug">
+                                <v-col class="pr-4">
+                                    <v-slider v-model="newBalance" class="align-center" :max="5000" :min="1" :disabled="stillSpinning">
+                                        <template v-slot:append>
+                                            <v-text-field v-model="newBalance" class="mt-0 pt-0" hide-details
+                                                type="number" style="width: 60px" disabled></v-text-field>
+                                        </template>
+                                    </v-slider>
+                                </v-col>
+                                    <v-btn @click="updateBalance" :disabled="stillSpinning">Add to balance</v-btn>
+                                </div>
+                            </v-row>
+                        </div>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col md="8">
+                        <div id="reel1" class="reel">
+                            <img v-for="pic in pics" :src="pic.src" :class="pic.class" :id="pic.id" alt="">
+                            <div :class="`reel-line one ${winLine.top ? 'win' : ''}`"></div>
+                            <div :class="`reel-line two ${winLine.center ? 'win' : ''}`"></div>
+                            <div :class="`reel-line three ${winLine.bottom ? 'win' : ''}`"></div>
+                        </div>
+                        <div id="reel2" class="reel">
+                            <img v-for="pic in pics" :src="pic.src" :class="pic.class" :id="pic.id" alt="">
+                            <div :class="`reel-line one ${winLine.top ? 'win' : ''}`"></div>
+                            <div :class="`reel-line two ${winLine.center ? 'win' : ''}`"></div>
+                            <div :class="`reel-line three ${winLine.bottom ? 'win' : ''}`"></div>
+                        </div>
+                        <div id="reel3" class="reel">
+                            <img v-for="pic in pics" :src="pic.src" :class="pic.class" :id="pic.id" alt="">
+                            <div :class="`reel-line one ${winLine.top ? 'win' : ''}`"></div>
+                            <div :class="`reel-line two ${winLine.center ? 'win' : ''}`"></div>
+                            <div :class="`reel-line three ${winLine.bottom ? 'win' : ''}`"></div>
+                        </div>
+                    </v-col>
+
+                    <v-col md="4">
+                        <v-container v-show="isDebug">
+                            <v-row>
+                                <!-- <v-flex>
+                                    POC for setting different spin time of wheels
+                                    <h4 class="pb-2">Spin time: </h4>
+                                    <v-select :items="[0, 100, 200, 300, 400, 500]" label="Spin time" solo
+                                        v-model="setSpinTime"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                </v-flex> -->
+                                <v-flex class="mt-2 mb-5">
+                                    <v-btn @click="setBalanceToZero" :disabled="stillSpinning">Set balance to zero</v-btn>
+                                </v-flex>
+                            </v-row>
+                            <v-row row>
+                                <v-flex xs12 sm6 md4>
+                                    <h4 class="pb-2">Reel one: </h4>
+                                    <v-select :items="symbols" label="Symbol" solo
+                                        v-model="debug.reel1.symbol"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                    <v-select :items="position" label="Landing position" solo
+                                        v-model="debug.reel1.position"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                </v-flex>
+
+                                <v-flex xs12 sm6 md4>
+                                    <h4 class="pb-2">Reel two: </h4>
+                                    <v-select :items="symbols" label="Symbol" solo
+                                        v-model="debug.reel2.symbol"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                    <v-select :items="position" label="Landing position" solo
+                                        v-model="debug.reel2.position"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                </v-flex>
+
+                                <v-flex xs12 sm6 md4>
+                                    <h4 class="pb-2">Reel three: </h4>
+                                    <v-select :items="symbols" label="Symbol" solo
+                                        v-model="debug.reel3.symbol"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                    <v-select :items="position" label="Landing position" solo
+                                        v-model="debug.reel3.position"
+                                        :disabled="stillSpinning"
+                                    >
+                                    </v-select>
+                                </v-flex>
+
+                                <v-flex xs12 sm12 md12>
+                                    <v-btn color="success" @click="fixedSpin()" :disabled="stillSpinning">Fixed spin!</v-btn>
+                                </v-flex>
+                            </v-row>
+                        </v-container>
+                    </v-col>
+                </v-row>
+
+            </v-col>
+
+            <v-container>
+                <v-row>
+                    <v-col md="12">
+                        <div id="random-container">
+                            <v-btn color="success" @click="randomSpin()" :disabled="stillSpinning || balance === 0">Random spin!</v-btn>
+                            <h4 class="pb-2 balance" v-if="balance===0">Please update your balance to continue</h4>
+                        </div>
+                    </v-col>
+                    <v-col md="12">
+                        <!-- 
+                            3 CHERRY symbols on top line 2000
+                            3 CHERRY symbols on center line 1000
+                            3 CHERRY symbols on bottom line 4000
+                            
+                            3 7 symbols on any line 150
+                            Any combination of CHERRY and 7 on any line 75
+                            3 3xBAR symbols on any line 50
+                            3 2xBAR symbols on any line 20
+                            3 BAR symbols on any line 10
+                            Combination of any BAR symbols on any line 5
+                        -->
+
+                        <!-- When a particular win happens the winning sum on pay-table must start blinking. -->
+                        <v-switch v-model="showTable" class="mx-2" label="Show win table" :disabled="stillSpinning"></v-switch>
+                        <v-col md="6" class="pl-0" v-if="showTable">
+                            <table>
+                                <tr>
+                                    <th>Combination</th>
+                                    <th>Position</th>
+                                    <th>Win</th>
+                                </tr>
+                                <tr :class="{win: winLine.top === 'Cherry'}">
+                                    <td>3 x <img src="pics/Cherry.png" height="45"></td>
+                                    <td>TOP</td>
+                                    <td>2000</td>
+                                </tr>
+                                <tr :class="{win: winLine.center === 'Cherry'}">
+                                    <td>3 x <img src="pics/Cherry.png" height="45"></td>
+                                    <td>CENTER</td>
+                                    <td>1000</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === 'Cherry'}">
+                                    <td>3 x <img src="pics/Cherry.png" height="45"></td>
+                                    <td>BOTTOM</td>
+                                    <td>4000</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === '7' || winLine.center === '7' || winLine.top === '7'}">
+                                    <td>3 x <img src="pics/7.png" height="45"></td>
+                                    <td>any</td>
+                                    <td>150</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === 'Cherry7' || winLine.center === 'Cherry7' || winLine.top === 'Cherry7'}">
+                                    <td>any combination <img src="pics/7.png" height="45"><img src="pics/Cherry.png"
+                                            height="45"></td>
+                                    <td>any</td>
+                                    <td>75</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === '3xBAR' || winLine.center === '3xBAR' || winLine.top === '3xBAR'}">
+                                    <td>3 x <img src="pics/3xBAR.png" height="45"></td>
+                                    <td>any</td>
+                                    <td>50</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === '2xBAR' || winLine.center === '2xBAR' || winLine.top === '2xBAR'}">
+                                    <td>3 x <img src="pics/2xBAR.png" height="45"></td>
+                                    <td>any</td>
+                                    <td>20</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === 'BAR' || winLine.center === 'BAR' || winLine.top === 'BAR'}">
+                                    <td>3 x <img src="pics/BAR.png" height="45"></td>
+                                    <td>any</td>
+                                    <td>10</td>
+                                </tr>
+                                <tr :class="{win: winLine.bottom === 'anyBar' || winLine.center === 'anyBar' || winLine.top === 'anyBar'}">
+                                    <td>any combination <img src="pics/BAR.png" height="45"><img src="pics/2xBAR.png"
+                                            height="45"><img src="pics/3xBAR.png" height="45"></td>
+                                    <td>any</td>
+                                    <td>5</td>
+                                </tr>
+                            </table>
+
+                        </v-col>
+                    </v-col>
+                </v-row>
+            </v-container>
+
+        </v-container>
+    </v-app>
+
+    <!-- scripts -->
+    <script type="text/javascript">
+        // constants
+        const TOP = "top"
+        const BOTTOM = "bottom"
+        const CENTER = "center"
+
+        const CHERRY = "Cherry"
+        const BAR = "BAR"
+        const BAR2 = "2xBAR"
+        const BAR3 = "3xBAR"
+        const SEVEN = "7"
+    </script>
+    <script type="text/javascript" src="scripts/debugMixin.js"></script>
+    <script type="text/javascript" src="scripts/scripts.js"></script>
+
+</body>
+
+</html>

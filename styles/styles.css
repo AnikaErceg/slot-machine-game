@@ -1,0 +1,62 @@
+#app .container {
+  background-color: #fff;
+}
+.reel {
+  display: inline-block;
+  width: 200px;
+  height: 344px;
+  position: relative;
+  margin: 0px 5px;
+  overflow: hidden;
+  z-index: 20;
+  background: #eeeeee;
+}
+.reel img {
+  display: block;
+  margin: 0 auto;
+  padding: 25.5px 30px;
+  position: absolute;
+  /* background-color: #f3f3f3; */
+}
+.reel img.one { top: -25% }
+.reel img.two { top: 25% }
+.reel img.three { top: 75% }
+.reel img.four { top: 125% }
+.reel img.five { top: 175% }
+.reel-line {
+  display: block;
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background-color: gray;
+  z-index: 5;
+}
+.win {
+  animation: blink 0.4s infinite alternate;
+}
+.reel-line.one {
+  top: 25%;
+}
+.reel-line.two {
+  top: 50%;
+}
+.reel-line.three {
+  top: 75%;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+@keyframes blink {
+  to {
+    background: #64DD17;
+  }
+}
