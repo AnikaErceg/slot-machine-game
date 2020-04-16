@@ -81,12 +81,12 @@ Element is set in position while spinning by checking the top attribute assigned
 
 In case it's set to center, top and bottom positions are set to null.
 
-In case it's set to top ot bottom, center position is set to null.
+In case it's set to top or bottom, center position is set to null.
 
 
-Using a matrix could allow for more payline options as it would be fairly easy to determine also vertical wins or any odd pay-line paths wins, as most modern video slot machines have nowadays.
+Using a matrix could allow for more payline options as it would be fairly easy to determine also vertical wins or any odd payline paths wins, as most modern video slot machines have nowadays.
 
-All it needs is to add comparison functions for new paylines and enable function to select multiple reels.
+All it needs is to add comparison functions for new paylines and enable function to select number of paylines.
 
 Using matrix like this could also allow adding more reels easily. 
 
@@ -98,7 +98,7 @@ setInterval is used to emulate spinning effect, as it's basically working like a
 
 - Because at the moment tic is pretty much hardcoded in debug mode to ensure reels fall on correct position, order of elements can't be changed.
 
-- This chould be fixed by calculating which elements falls where when the app is loaded and store that information in an object. Maybe somehting like: 
+- This chould be fixed by calculating which element falls where when the app is loaded and store that information in an object. Maybe somehting like: 
 
 ````
 // this is more clear example that would be easy to debug in case issue would arise
